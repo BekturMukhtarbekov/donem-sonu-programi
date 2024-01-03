@@ -1,0 +1,295 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_USERS 10 // Sistemin isleyebilecegi maksimum kullanici sayisi
+
+
+//                                                             STRUCTURES
+//Ucus tarihini temsil etmek icin bir yapi
+typedef struct {
+    int gun;
+    int ay;
+    int yil;
+}date; // tanimlamalarda kolaylik saglamak icin burada ve ileride structure'lara yeni isimler verildi
+
+// Kullanici bilgisini temsil etmek icin bir yapi
+typedef struct {
+    int userId  ;
+    char name[50];
+    char surname[50];
+    int walletAmount;
+    char password[50];
+}Kullanici;
+
+//Ucus bilgilerini temsil etmek icin bir structure
+typedef struct {
+    int ucusId;
+    char nereden[25];
+    char nereye[25];
+    short bosYer;
+    int ucret; // Added ucret member/
+    date tarih;
+}Ucus;
+
+Ucus ucuslar[10] = {{500, "Istanbul\0", "Ankara\0", 7, 3530, {24, 01, 2024}},
+                    {501, "Istanbul\0", "Izmir\0", 12, 2870, {12, 01, 2024}},
+                    {502, "Istanbul\0", "Antalya\0", 5, 5030, {15, 02, 2024}},
+                    {503, "Istanbul\0", "Trabzon\0", 19, 2530, {02, 05, 2024}},
+                    {504, "Istanbul\0", "Sivas\0", 21, 2650, {02, 03, 2024}},
+                    {505, "Istanbul\0", "Van\0", 25, 3900, {29, 03, 2024}},
+                    {506, "Ankara\0", "Istanbul\0", 6, 3760, {18, 02, 2024}},
+                    {507, "Ankara\0", "Izmir\0", 3, 3380, {19, 01, 2024}},
+                    {508, "Ankara\0", "Antalya\0", 11, 3450, {25, 01, 2024}},
+                    {509, "Ankara\0", "Adana\0", 15, 3100, {29, 01, 2024}}};
+
+//                                           VARIABLES
+
+//Kullanici degiskenleri
+Kullanici users[MAX_USERS]; // Kullanici bilgilerini saklamak icin bir dizi
+int userCount = 0; // Kayitli kullanicilarin sayisini tutmak icin bir degisken
+int nextUserId = 20230001; // Kullanicilarin sisteme kolayca girebilmeleri icin ID numarasi icin bir degisken
+
+//Ucus degiskenleri
+Ucus flights[10];
+int flightCount = 0;
+int nextFlightId = 0x154AB77; // Ucus ID no'larini olusturmak icin bir degisken
+int rez[10];
+
+
+
+
+//                                           FUNCKTIONS
+
+//rezervasyonun yapilmasi icin bir fonksiyon
+void rezYap () {
+    int secim;
+    char onay;
+    biletal:
+    printf("\nUcus numarasi:\tNereden:\tNereye:\t\tBos yer sayisi:\t\tUcreti:\t\tTarihi:\n");
+    printf("__________________________________________________________________________________________\n");
+  //72-84 satirlar, ucuslarin bilgilerinin alt alta olmasi icin yazildi
+    for (int i = 0; i < 6; ++i) {
+        printf("%d\t\t%s\t%s\t\t%hd\t\t\t%d\t\t%d.%d.%d\n", ucuslar[i].ucusId, ucuslar[i].nereden, ucuslar[i].nereye, ucuslar[i].bosYer, ucuslar[i].ucret, ucuslar[i].tarih.gun, ucuslar[i].tarih.ay, ucuslar[i].tarih.yil);
+    }
+    for (int i = 6; i < 10; ++i) {
+        if (i != 6) {
+            printf("%d\t\t%s\t\t%s\t\t%hd\t\t\t%d\t\t%d.%d.%d\n", ucuslar[i].ucusId, ucuslar[i].nereden, ucuslar[i].nereye,
+                   ucuslar[i].bosYer, ucuslar[i].ucret, ucuslar[i].tarih.gun, ucuslar[i].tarih.ay,
+                   ucuslar[i].tarih.yil);
+        } else {
+            printf("%d\t\t%s\t\t%s\t%hd\t\t\t%d\t\t%d.%d.%d\n", ucuslar[i].ucusId, ucuslar[i].nereden, ucuslar[i].nereye,ucuslar[i].bosYer, ucuslar[i].ucret, ucuslar[i].tarih.gun, ucuslar[i].tarih.ay,
+                   ucuslar[i].tarih.yil);
+        }
+    }
+    printf("\nAlmak istediginiz ucus numarasini seciniz:\n");
+    scanf("%d", &secim);
+    for (int j = 0; j < 10; j++) {
+        if (secim == 500+j) {
+            printf("\n%d TL ucretli %s'den %s'ye ucus bileti almak icin onayliyor musunuz? (e,h):", ucuslar[j].ucret, ucuslar[j].nereden, ucuslar[j].nereye);
+            fflush(stdin);// Ek bir güvenlik önlemi, platforma bağlı olarak çalışmayabilir
+            onay = getchar();
+            onay = toupper(onay);    //case'lere ayri ayri 'e' ve 'E' yazmak yerine girilen degeri buyuk harfe cevirmek icin
+            if (ucuslar[j].bosYer > 0) {
+                switch (onay) {
+                    case 'E':
+                        if (users[0].walletAmount >= ucuslar[j].ucret){
+                        printf("\n%d.%d.%d tarihinde %d numarali ucus biletini almis oldunuz. Bizi tercih ettiginiz icin tesekkur ederiz.\n", ucuslar[j].tarih.gun, ucuslar[j].tarih.ay, ucuslar[j].tarih.yil, ucuslar[j].ucusId);
+                        ucuslar[j].bosYer--;
+                        rez[j] = ucuslar[j].ucusId;
+                        users[0].walletAmount -= ucuslar[j].ucret;
+                        printf("Kalan bakiyeniz = %d", users[0].walletAmount);
+                        } else
+                            printf("\nBakiyeniz yetersizdir.\nBaska hesabinizi deneyiniz.\n");
+                        break;
+                    case 'H':
+                        goto biletal;
+                        break;
+                }
+            } else {
+                printf("Maalesef istediginiz ucusta yer yok. Lutfen baska bir ucus tercih ediniz");
+                goto biletal;
+            }
+        }
+    }
+}
+
+//rezervasyonu goruntulemek icin bir fonksiyon
+void rezGor () {
+    printf("\nYapilan  rezervasyonlar:\n");
+    printf("Ucus numarasi\tTarih\n");
+    printf("_________________________\n");
+
+    for (int i = 0; i < 10; ++i) {
+        if (rez[i] != 0) {
+            printf("%d\t\t%d.%d.%d\n", rez[i], ucuslar[i].tarih.gun, ucuslar[i].tarih.ay, ucuslar[i].tarih.yil);
+        }
+    }
+}
+
+//secilen rezervasyonun iptali icin fonksiyon
+void iptalEt() {
+    int iptalID;
+    printf("Iptal etmek istediginiz ucusun numarasini girin: ");
+    scanf("%d", &iptalID);
+
+    for (int i = 0; i < 10; ++i) {
+        if (rez[i] == iptalID) {
+            printf("%d numarali ucus rezervasyonu iptal edildi.\n", rez[i]);
+            rez[i] = 0; // İptal edilen rezervasyonun numarasını sıfırla
+            return; // İşlem tamamlandı, fonksiyondan çık
+        }
+        ucuslar[i].bosYer++;
+    }
+
+    printf("Belirtilen numarada bir rezervasyon bulunamadi.\n");
+}
+
+// Yeni bir kullanici eklemek icin bir fonksiyon
+            void signup(){
+                if (userCount >= MAX_USERS) {
+                    printf("Cannot add more users. System full.\n");
+                    return; }
+
+                Kullanici newUser;
+
+
+
+
+
+
+
+
+
+
+                newUser.userId = nextUserId ;
+
+
+
+                printf("Enter Name: ");
+                scanf("%s", newUser.name);
+
+                printf("Enter Surname: ");
+                scanf("%s", newUser.surname);
+
+                printf("Enter Wallet Amount: ");
+                scanf("%d", &newUser.walletAmount);
+
+                printf("Create Password: ");
+                scanf("%s", newUser.password);
+
+                users[userCount++] = newUser;
+                printf("User Signed Up Successfully!\n");
+                printf("Your User ID Is : %d\n " , nextUserId);
+
+              //girilen bilgileri "users.txt" adli dosyaya aktarir
+                FILE *file = fopen("users.txt", "a");
+
+                if (file == NULL) {
+                    printf("Error opening file for writing.\n");
+                    return;
+                }
+
+                fprintf(file, "User ID: %d\nName: %s\nSurname: %s\nWallet Amount: %.2f\nPassword: %s\n\n",
+                        nextUserId, newUser.name, newUser.surname, newUser.walletAmount, newUser.password);
+                nextUserId++;
+
+                fclose(file);
+            }
+
+
+
+
+// Uygulamaya girmek icin bir fonksiyon
+            int login() {
+                int userId;
+                char password[50];
+                int i;
+
+                printf("Enter User ID: ");
+                scanf("%d", &userId);
+
+                printf("Enter Password: ");
+                scanf("%s", password);
+
+                for (i = 0; i < userCount; i++) {
+                    if (users[i].userId == userId && strcmp(users[i].password, password) == 0) {
+                        printf("Login successful!\n");
+                        printf("Welcome, %s %s!\n", users[i].name, users[i].surname);
+                        return 1;
+                    }
+
+                }
+                return 0;
+            }
+
+
+//                                              MAIN
+
+
+            int main() {
+                FILE *file ;
+
+
+                int variable = 0;
+                int choice;
+                int logCtrl;
+
+                do {
+                    printf("\n1. Signup\n2. Login\n3. Exit\n");
+
+                    printf("Enter your choice: ");
+                    scanf("%d", &choice);
+                    switch (choice) {
+                        case 1:
+                            file = fopen("users.txt", "a");
+                            if (file == NULL) {
+                                printf("Error creating/opening file for writing.\n");
+                                return 1;  // Exit with an error code
+                            }
+                            fclose(file);
+
+                            // Call the signup function
+                            signup();
+                            break;
+                        case 2:
+                        loginAgain:
+                            logCtrl = login();
+                            if (logCtrl == 1) {
+                                do {
+                                    printf("\n1. Make Reservation\n2. Show Flights\n3. Delete Reservation\n4. Logout\n");
+                                    printf("Enter your choice: ");
+                                    scanf("%d", &choice);
+
+                                    switch (choice) {
+                                        case 1:
+                                            rezYap();
+                                            break;
+                                        case 2:
+                                            rezGor();
+                                            break;
+                                        case 3:
+                                            iptalEt() ;
+                                            break;
+                                        case 4:
+                                            variable = 0;
+                                            break;
+                                        default:
+                                            printf("Invalid choice. Please enter again.\n");
+                                    }
+                                } while (choice != 4);
+                            }
+                            else {
+                                printf("Invalid password or ID! Please try again.\n\n");
+                                goto loginAgain;
+                            }
+                            break;
+                        case 3:
+                            printf("Exiting the program.\n");
+                            variable = 1;
+                            break;
+                        default:
+                            printf("Invalid choice. Please enter again.\n");
+                    }
+                }while (variable == 0); // Infinite loop until exit (choice 3) is selected
+            }
